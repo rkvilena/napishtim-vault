@@ -1,6 +1,6 @@
 # NapishtimVault
 
-A secure, minimalist password manager built with Python and PyQt6.
+A secure, minimalist password manager built with Python and PyQt6. This project is built because of my own problem of managing many accounts-password information that scattered on my local device in many forms (txt, photos, etc). The aim to centralized personal account-password information while keeping it secure when the device is getting hacked/stolen.
 
 ## Features
 
