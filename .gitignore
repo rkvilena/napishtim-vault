@@ -1,0 +1,130 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env/
+.env.*     # local env files
+
+.github/
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so ignore them:
+*.manifest
+*.spec
+dist/
+build/
+# One-file bundled exe
+*.exe
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.pytest_cache/
+pytestdebug.log
+
+# Translations
+*.mo
+*.pot
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# PyCharm
+.idea/
+
+# mypy
+.mypy_cache/
+
+# profiling
+.prof
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.db
+
+# Secret files and keys
+*.pem
+*.key
+secrets*
+*.env
+.envrc
+
+# Certificates and credentials
+certs/
+credentials/
+
+# OS generated files
+*.swp
+*~
+~$*
+
+# Build/test artifacts
+coverage/
+htmlcov/
+
+# Local application files
+local_settings.py
+instance/
+.webassets-cache
+
+# Optional: ignore containers / output of packaging tools
+dist/
+build/
+
+# End of file

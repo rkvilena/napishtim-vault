@@ -1,0 +1,7 @@
+# NapishtimVault - Password Manager Dependencies
+# Pin versions for reproducibility
+
+PyQt6==6.10.1
+cryptography==46.0.3
+
+# Database: we use standard library `sqlite3`.
