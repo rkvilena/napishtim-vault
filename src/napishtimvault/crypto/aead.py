@@ -1,7 +1,6 @@
 """Fernet authenticated encryption."""
 
 import base64
-from typing import Union
 
 from cryptography.fernet import Fernet
 

@@ -4,68 +4,77 @@ import secrets
 import string
 from typing import Optional
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
-    QLineEdit, QPushButton, QTextEdit, QFrame,
-    QMessageBox, QCheckBox, QSpinBox, QScrollArea, QWidget
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QTextEdit,
+    QFrame,
+    QMessageBox,
+    QCheckBox,
+    QSpinBox,
+    QScrollArea,
+    QWidget,
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
 
 from ..models import Credential, AuditEvent
 
 
 class CredentialDialog(QDialog):
     """Dialog for adding or editing a credential."""
-    
+
     def __init__(self, credential: Optional[Credential] = None, parent=None):
         super().__init__(parent)
         self.credential = credential
         self.result_credential: Optional[Credential] = None
         self._init_ui()
-    
+
     def _init_ui(self):
         self.setWindowTitle("Edit Credential" if self.credential else "Add Credential")
         self.setMinimumWidth(420)
         self.setModal(True)
-        
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
-        
+
         # Title
         title_label = QLabel("Title *")
         layout.addWidget(title_label)
-        
+
         self.title_input = QLineEdit()
         self.title_input.setPlaceholderText("e.g., Gmail, GitHub, Netflix")
         if self.credential:
             self.title_input.setText(self.credential.title)
         layout.addWidget(self.title_input)
-        
+
         # Username
         username_label = QLabel("Username *")
         layout.addWidget(username_label)
-        
+
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("e.g., john@example.com")
         if self.credential:
             self.username_input.setText(self.credential.username)
         layout.addWidget(self.username_input)
-        
+
         # Password
         pwd_label = QLabel("Password *")
         layout.addWidget(pwd_label)
-        
+
         pwd_row = QHBoxLayout()
         pwd_row.setSpacing(8)
-        
+
         self.password_input = QLineEdit()
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
         self.password_input.setPlaceholderText("Enter password")
         if self.credential:
             self.password_input.setText(self.credential.password)
         pwd_row.addWidget(self.password_input, 1)
-        
+
         # Toggle visibility button
         self.show_pwd_btn = QPushButton("👁")
         self.show_pwd_btn.setObjectName("iconButton")
@@ -73,7 +82,7 @@ class CredentialDialog(QDialog):
         self.show_pwd_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.show_pwd_btn.clicked.connect(self._toggle_password_visibility)
         pwd_row.addWidget(self.show_pwd_btn)
-        
+
         # Generate button
         gen_btn = QPushButton("🎲")
         gen_btn.setObjectName("iconButton")
@@ -81,9 +90,9 @@ class CredentialDialog(QDialog):
         gen_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         gen_btn.clicked.connect(self._show_generator)
         pwd_row.addWidget(gen_btn)
-        
+
         layout.addLayout(pwd_row)
-        
+
         # Password generator options (hidden by default)
         self.generator_frame = QFrame()
         self.generator_frame.setStyleSheet("""
@@ -96,11 +105,11 @@ class CredentialDialog(QDialog):
         """)
         gen_layout = QVBoxLayout(self.generator_frame)
         gen_layout.setSpacing(8)
-        
+
         gen_header = QLabel("Password Generator")
         gen_header.setStyleSheet("font-weight: bold; color: #e94560;")
         gen_layout.addWidget(gen_header)
-        
+
         # Length
         len_row = QHBoxLayout()
         len_row.addWidget(QLabel("Length:"))
@@ -110,85 +119,85 @@ class CredentialDialog(QDialog):
         len_row.addWidget(self.length_spin)
         len_row.addStretch()
         gen_layout.addLayout(len_row)
-        
+
         # Options
         self.uppercase_check = QCheckBox("Uppercase (A-Z)")
         self.uppercase_check.setChecked(True)
         gen_layout.addWidget(self.uppercase_check)
-        
+
         self.lowercase_check = QCheckBox("Lowercase (a-z)")
         self.lowercase_check.setChecked(True)
         gen_layout.addWidget(self.lowercase_check)
-        
+
         self.digits_check = QCheckBox("Digits (0-9)")
         self.digits_check.setChecked(True)
         gen_layout.addWidget(self.digits_check)
-        
+
         self.symbols_check = QCheckBox("Symbols (!@#$...)")
         self.symbols_check.setChecked(True)
         gen_layout.addWidget(self.symbols_check)
-        
+
         # Generate button in frame
         gen_now_btn = QPushButton("Generate")
         gen_now_btn.setObjectName("primaryButton")
         gen_now_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         gen_now_btn.clicked.connect(self._generate_password)
         gen_layout.addWidget(gen_now_btn)
-        
+
         layout.addWidget(self.generator_frame)
         self.generator_frame.hide()
-        
+
         # URL
         url_label = QLabel("URL")
         layout.addWidget(url_label)
-        
+
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("https://example.com")
         if self.credential and self.credential.url:
             self.url_input.setText(self.credential.url)
         layout.addWidget(self.url_input)
-        
+
         # Notes
         notes_label = QLabel("Notes")
         layout.addWidget(notes_label)
-        
+
         self.notes_input = QTextEdit()
         self.notes_input.setPlaceholderText("Additional notes...")
         self.notes_input.setMaximumHeight(80)
         if self.credential and self.credential.notes:
             self.notes_input.setPlainText(self.credential.notes)
         layout.addWidget(self.notes_input)
-        
+
         # Error label
         self.error_label = QLabel("")
         self.error_label.setObjectName("errorLabel")
         self.error_label.hide()
         layout.addWidget(self.error_label)
-        
+
         layout.addSpacing(8)
-        
+
         # Buttons
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(12)
-        
+
         cancel_btn = QPushButton("Cancel")
         cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         btn_layout.addWidget(cancel_btn)
-        
+
         btn_layout.addStretch()
-        
+
         save_btn = QPushButton("Save")
         save_btn.setObjectName("primaryButton")
         save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         save_btn.clicked.connect(self._on_save)
         btn_layout.addWidget(save_btn)
-        
+
         layout.addLayout(btn_layout)
-        
+
         # Focus title
         self.title_input.setFocus()
-    
+
     def _toggle_password_visibility(self):
         if self.password_input.echoMode() == QLineEdit.EchoMode.Password:
             self.password_input.setEchoMode(QLineEdit.EchoMode.Normal)
@@ -196,13 +205,13 @@ class CredentialDialog(QDialog):
         else:
             self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
             self.show_pwd_btn.setText("👁")
-    
+
     def _show_generator(self):
         self.generator_frame.setVisible(not self.generator_frame.isVisible())
         # Ensure the dialog resizes back when the generator is hidden.
         self.adjustSize()
         self.resize(self.sizeHint())
-    
+
     def _generate_password(self):
         chars = ""
         if self.uppercase_check.isChecked():
@@ -213,44 +222,44 @@ class CredentialDialog(QDialog):
             chars += string.digits
         if self.symbols_check.isChecked():
             chars += "!@#$%^&*()_+-=[]{}|;:,.<>?"
-        
+
         if not chars:
             chars = string.ascii_letters + string.digits
-        
+
         length = self.length_spin.value()
-        password = ''.join(secrets.choice(chars) for _ in range(length))
-        
+        password = "".join(secrets.choice(chars) for _ in range(length))
+
         self.password_input.setText(password)
         self.password_input.setEchoMode(QLineEdit.EchoMode.Normal)
         self.show_pwd_btn.setText("🙈")
-    
+
     def _show_error(self, message: str):
         self.error_label.setText(message)
         self.error_label.show()
-    
+
     def _on_save(self):
         title = self.title_input.text().strip()
         username = self.username_input.text().strip()
         password = self.password_input.text()
         url = self.url_input.text().strip() or None
         notes = self.notes_input.toPlainText().strip() or None
-        
+
         # Validation
         if not title:
             self._show_error("Title is required")
             self.title_input.setFocus()
             return
-        
+
         if not username:
             self._show_error("Username is required")
             self.username_input.setFocus()
             return
-        
+
         if not password:
             self._show_error("Password is required")
             self.password_input.setFocus()
             return
-        
+
         self.result_credential = Credential(
             id=self.credential.id if self.credential else None,
             title=title,
@@ -259,13 +268,13 @@ class CredentialDialog(QDialog):
             url=url,
             notes=notes,
         )
-        
+
         self.accept()
 
 
 class ConfirmDialog(QMessageBox):
     """Confirmation dialog with dark theme."""
-    
+
     def __init__(self, title: str, message: str, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -275,7 +284,7 @@ class ConfirmDialog(QMessageBox):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         self.setDefaultButton(QMessageBox.StandardButton.No)
-    
+
     @staticmethod
     def confirm(title: str, message: str, parent=None) -> bool:
         """Show confirmation dialog and return True if confirmed."""
@@ -335,7 +344,9 @@ class HistoryDialog(QDialog):
                 right.addStretch()
                 ts = QLabel(event.occurred_at)
                 ts.setStyleSheet("color: #707070; font-size: 10px;")
-                ts.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+                ts.setAlignment(
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom
+                )
                 right.addWidget(ts)
                 row.addLayout(right)
 
@@ -380,7 +391,9 @@ class ChangeMasterPasswordDialog(QDialog):
         title.setStyleSheet("font-weight: bold; font-size: 16px;")
         layout.addWidget(title)
 
-        info = QLabel("This will re-encrypt all saved passwords with the new master password.")
+        info = QLabel(
+            "This will re-encrypt all saved passwords with the new master password."
+        )
         info.setObjectName("subtitleLabel")
         info.setWordWrap(True)
         layout.addWidget(info)
