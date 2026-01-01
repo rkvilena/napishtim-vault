@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QListWidgetItem,
     QFrame,
+    QScrollArea,
 )
 from PyQt6.QtCore import pyqtSignal, Qt
 
@@ -194,29 +195,29 @@ class VaultWidget(QWidget):
 
         layout.addLayout(search_row)
 
-        # Credentials list container
-        self.list_container = QVBoxLayout()
-        self.list_container.setSpacing(8)
+        # Credentials list (scrollable)
+        # NOTE: We use a QVBoxLayout with widgets instead of QListWidget for flexible styling.
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.scroll_area.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll_area.setStyleSheet(
+            "QScrollArea { background-color: transparent; border: none; }"
+        )
 
-        # Scroll area content
         self.scroll_content = QWidget()
-        self.scroll_content.setLayout(self.list_container)
+        self.scroll_content.setStyleSheet("background-color: transparent;")
+        self.list_layout = QVBoxLayout(self.scroll_content)
+        self.list_layout.setContentsMargins(0, 0, 12, 0)
+        self.list_layout.setSpacing(8)
+        self.scroll_area.setWidget(self.scroll_content)
 
-        # We'll use a simple QVBoxLayout with widgets instead of QListWidget
-        # for more flexible styling
-        self.list_frame = QFrame()
-        self.list_frame.setStyleSheet("""
-            QFrame {
-                background-color: transparent;
-                border: none;
-            }
-        """)
-        list_layout = QVBoxLayout(self.list_frame)
-        list_layout.setContentsMargins(0, 0, 0, 0)
-        list_layout.setSpacing(8)
-        self.list_layout = list_layout
-
-        layout.addWidget(self.list_frame, 1)
+        layout.addWidget(self.scroll_area, 1)
 
         # Empty state label
         self.empty_label = QLabel(
@@ -251,11 +252,11 @@ class VaultWidget(QWidget):
 
         if not self._credentials:
             self.empty_label.show()
-            self.list_frame.hide()
+            self.scroll_area.hide()
             return
 
         self.empty_label.hide()
-        self.list_frame.show()
+        self.scroll_area.show()
 
         for cred in self._credentials:
             item_widget = CredentialItemWidget(cred)

@@ -38,7 +38,7 @@ Vault Screen
 1. Create and activate virtual environment:
 ```powershell
 py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+source ./.venv/Scripts/activate # this is the one works on my local
 ```
 
 2. Install dependencies:
@@ -62,7 +62,7 @@ python src/napishtimvault/app.py
 
 ```powershell
 python -m pip install pyinstaller
-pyinstaller --noconsole --name NapishtimVault --onefile src/napishtimvault/app.py
+pyinstaller --clean --noconsole --name NapishtimVault --onefile --paths src run.py
 ```
 
 The executable will be created in the `dist/` folder.
