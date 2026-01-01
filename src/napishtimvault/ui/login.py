@@ -8,6 +8,9 @@ from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QFont
 
 
+AUTH_PANEL_WIDTH = 500
+
+
 class SetupWidget(QWidget):
     """First-time setup screen for creating master password."""
     
@@ -28,7 +31,8 @@ class SetupWidget(QWidget):
         # Center container
         container = QFrame()
         container.setObjectName("headerFrame")
-        container.setMaximumWidth(400)
+        container.setMinimumWidth(AUTH_PANEL_WIDTH)
+        container.setMaximumWidth(AUTH_PANEL_WIDTH)
         container_layout = QVBoxLayout(container)
         container_layout.setSpacing(16)
         
@@ -201,7 +205,8 @@ class LoginWidget(QWidget):
         # Center container
         container = QFrame()
         container.setObjectName("headerFrame")
-        container.setMaximumWidth(400)
+        container.setMinimumWidth(AUTH_PANEL_WIDTH - 200)
+        container.setMaximumWidth(AUTH_PANEL_WIDTH + 200)
         container_layout = QVBoxLayout(container)
         container_layout.setSpacing(16)
         

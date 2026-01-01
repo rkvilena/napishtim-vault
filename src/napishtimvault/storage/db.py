@@ -71,6 +71,26 @@ class Database:
                 updated_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
         """)
+
+        # Deletion history table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS deletion_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                username TEXT NOT NULL,
+                deleted_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
+
+        # Audit log table (creation/edit/deletion history)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                action TEXT NOT NULL,
+                occurred_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
         
         self._conn.commit()
     

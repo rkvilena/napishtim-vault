@@ -3,7 +3,7 @@
 from typing import Optional, List
 
 from ..crypto import decrypt, encrypt
-from ..models import Credential
+from ..models import Credential, AuditEvent
 from .db import Database
 
 
@@ -75,21 +75,33 @@ class CredentialRepository:
         Returns:
             The ID of the created credential
         """
-        cursor = self.db.execute(
-            """
-            INSERT INTO credentials (title, username, password, url, notes)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (
-                credential.title,
-                credential.username,
-                self._encrypt_password(credential.password),
-                credential.url,
-                credential.notes,
+        conn = self.db.connection
+        conn.execute("BEGIN")
+        try:
+            cursor = conn.execute(
+                """
+                INSERT INTO credentials (title, username, password, url, notes)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    credential.title,
+                    credential.username,
+                    self._encrypt_password(credential.password),
+                    credential.url,
+                    credential.notes,
+                ),
             )
-        )
-        self.db.commit()
-        return cursor.lastrowid
+
+            conn.execute(
+                "INSERT INTO audit_log (title, action) VALUES (?, ?)",
+                (credential.title, "created"),
+            )
+
+            conn.commit()
+            return cursor.lastrowid
+        except Exception:
+            conn.rollback()
+            raise
     
     def get(self, credential_id: int) -> Optional[Credential]:
         """Get a credential by ID."""
@@ -145,24 +157,37 @@ class CredentialRepository:
         Returns:
             True if updated, False if not found
         """
-        cursor = self.db.execute(
-            """
-            UPDATE credentials
-            SET title = ?, username = ?, password = ?, url = ?, notes = ?,
-                updated_at = datetime('now')
-            WHERE id = ?
-            """,
-            (
-                credential.title,
-                credential.username,
-                self._encrypt_password(credential.password),
-                credential.url,
-                credential.notes,
-                credential.id,
+        conn = self.db.connection
+        conn.execute("BEGIN")
+        try:
+            cursor = conn.execute(
+                """
+                UPDATE credentials
+                SET title = ?, username = ?, password = ?, url = ?, notes = ?,
+                    updated_at = datetime('now')
+                WHERE id = ?
+                """,
+                (
+                    credential.title,
+                    credential.username,
+                    self._encrypt_password(credential.password),
+                    credential.url,
+                    credential.notes,
+                    credential.id,
+                ),
             )
-        )
-        self.db.commit()
-        return cursor.rowcount > 0
+
+            if cursor.rowcount > 0:
+                conn.execute(
+                    "INSERT INTO audit_log (title, action) VALUES (?, ?)",
+                    (credential.title, "edited"),
+                )
+
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception:
+            conn.rollback()
+            raise
     
     def delete(self, credential_id: int) -> bool:
         """
@@ -171,12 +196,50 @@ class CredentialRepository:
         Returns:
             True if deleted, False if not found
         """
+        # Fetch minimal info for history before deleting.
+        row = self.db.execute(
+            "SELECT title FROM credentials WHERE id = ?",
+            (credential_id,),
+        ).fetchone()
+        if not row:
+            return False
+
+        conn = self.db.connection
+        conn.execute("BEGIN")
+        try:
+            conn.execute(
+                "INSERT INTO audit_log (title, action) VALUES (?, ?)",
+                (row["title"], "deleted"),
+            )
+            cursor = conn.execute("DELETE FROM credentials WHERE id = ?", (credential_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception:
+            conn.rollback()
+            raise
+
+    def get_audit_events(self, limit: int = 200) -> List[AuditEvent]:
+        """Return recent audit log events (most recent first)."""
         cursor = self.db.execute(
-            "DELETE FROM credentials WHERE id = ?",
-            (credential_id,)
+            """
+            SELECT title, action, occurred_at
+            FROM audit_log
+            ORDER BY occurred_at DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
         )
-        self.db.commit()
-        return cursor.rowcount > 0
+
+        events: List[AuditEvent] = []
+        for row in cursor.fetchall():
+            events.append(
+                AuditEvent(
+                    title=row["title"],
+                    action=row["action"],
+                    occurred_at=row["occurred_at"],
+                )
+            )
+        return events
     
     def search(self, query: str) -> List[Credential]:
         """

@@ -68,3 +68,21 @@ class AppConfig:
     clipboard_clear_seconds: int = 30
     minimize_to_tray: bool = False
     start_minimized: bool = False
+
+
+@dataclass
+class DeletionRecord:
+    """Represents an entry in deletion history."""
+
+    title: str
+    username: str
+    deleted_at: str
+
+
+@dataclass
+class AuditEvent:
+    """Represents an audit log event shown in History."""
+
+    title: str
+    action: str  # created | edited | deleted
+    occurred_at: str

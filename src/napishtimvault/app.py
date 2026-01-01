@@ -10,7 +10,7 @@ from PyQt6.QtGui import QIcon
 
 from .ui import (
     LoginWidget, SetupWidget, VaultWidget, 
-    CredentialDialog, ConfirmDialog, ChangeMasterPasswordDialog, DARK_STYLESHEET
+    CredentialDialog, ConfirmDialog, ChangeMasterPasswordDialog, HistoryDialog, DARK_STYLESHEET
 )
 from .storage import Database, CredentialRepository, ConfigRepository
 from .crypto import (
@@ -52,8 +52,8 @@ class NapishtimVault(QMainWindow):
     def _init_ui(self):
         """Initialize the UI."""
         self.setWindowTitle("NapishtimVault")
-        self.setMinimumSize(500, 600)
-        self.resize(550, 700)
+        self.setMinimumSize(650, 600)
+        self.resize(720, 720)
         
         # Apply dark theme
         self.setStyleSheet(DARK_STYLESHEET)
@@ -80,6 +80,7 @@ class NapishtimVault(QMainWindow):
         self._vault_widget.copy_password.connect(self._on_copy_password)
         self._vault_widget.lock_clicked.connect(self._lock_vault)
         self._vault_widget.change_master_password_clicked.connect(self._on_change_master_password)
+        self._vault_widget.history_clicked.connect(self._on_history_clicked)
         self._vault_widget.search_changed.connect(self._on_search)
         self._stack.addWidget(self._vault_widget)
     
@@ -248,6 +249,17 @@ class NapishtimVault(QMainWindow):
             self._vault_widget.set_credentials(credentials)
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load credentials: {e}")
+
+    def _on_history_clicked(self):
+        """Open the history window."""
+        if not self._cred_repo:
+            return
+
+        try:
+            events = self._cred_repo.get_audit_events()
+            HistoryDialog(events, self).exec()
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to load history: {e}")
     
     def _on_search(self, query: str):
         """Handle search input change."""

@@ -6,12 +6,12 @@ from typing import Optional
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
     QLineEdit, QPushButton, QTextEdit, QFrame,
-    QMessageBox, QCheckBox, QSpinBox
+    QMessageBox, QCheckBox, QSpinBox, QScrollArea, QWidget
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-from ..models import Credential
+from ..models import Credential, AuditEvent
 
 
 class CredentialDialog(QDialog):
@@ -281,6 +281,81 @@ class ConfirmDialog(QMessageBox):
         """Show confirmation dialog and return True if confirmed."""
         dialog = ConfirmDialog(title, message, parent)
         return dialog.exec() == QMessageBox.StandardButton.Yes
+
+
+class HistoryDialog(QDialog):
+    """History window showing create/edit/delete events."""
+
+    def __init__(self, events: list[AuditEvent], parent=None):
+        super().__init__(parent)
+        self._events = events
+        self._init_ui()
+
+    def _init_ui(self):
+        self.setWindowTitle("History")
+        self.setMinimumSize(520, 320)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(14)
+
+        title = QLabel("History")
+        title.setStyleSheet("font-weight: bold; font-size: 16px;")
+        layout.addWidget(title)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(6)
+
+        if not self._events:
+            empty = QLabel("No history yet.")
+            empty.setStyleSheet("color: #707070; font-size: 12px;")
+            content_layout.addWidget(empty)
+        else:
+            for event in self._events:
+                row_widget = QWidget()
+                row_widget.setStyleSheet("background: transparent;")
+
+                row = QHBoxLayout(row_widget)
+                row.setContentsMargins(0, 0, 0, 0)
+                row.setSpacing(10)
+
+                msg = QLabel(f"{event.title} has been {event.action}")
+                msg.setStyleSheet("color: #eaeaea; font-size: 13px;")
+                msg.setWordWrap(True)
+                row.addWidget(msg, 1)
+
+                right = QVBoxLayout()
+                right.addStretch()
+                ts = QLabel(event.occurred_at)
+                ts.setStyleSheet("color: #707070; font-size: 10px;")
+                ts.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+                right.addWidget(ts)
+                row.addLayout(right)
+
+                content_layout.addWidget(row_widget)
+
+            # No stretch here: keeps the list compact when there are few entries.
+
+        scroll.setWidget(content)
+        layout.addWidget(scroll, 1)
+
+        close_btn = QPushButton("Close")
+        close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        close_btn.clicked.connect(self.accept)
+        layout.addWidget(close_btn)
+
+        # Size the dialog to its contents (grow taller with more records),
+        # but cap it so it doesn't become too large.
+        self.adjustSize()
+        target = self.sizeHint()
+        self.resize(max(520, target.width()), min(720, max(320, target.height())))
 
 
 class ChangeMasterPasswordDialog(QDialog):

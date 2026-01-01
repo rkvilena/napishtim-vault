@@ -121,6 +121,7 @@ class VaultWidget(QWidget):
     copy_password = pyqtSignal(int)
     lock_clicked = pyqtSignal()
     change_master_password_clicked = pyqtSignal()
+    history_clicked = pyqtSignal()
     search_changed = pyqtSignal(str)
     
     def __init__(self, parent=None):
@@ -149,6 +150,13 @@ class VaultWidget(QWidget):
         change_pwd_btn.setToolTip("Change the master password (re-encrypts all entries)")
         change_pwd_btn.clicked.connect(self.change_master_password_clicked.emit)
         header.addWidget(change_pwd_btn)
+
+        # History button
+        history_btn = QPushButton("History")
+        history_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        history_btn.setToolTip("View create/edit/delete history")
+        history_btn.clicked.connect(self.history_clicked.emit)
+        header.addWidget(history_btn)
         
         # Lock button
         lock_btn = QPushButton("🔒 Lock")
