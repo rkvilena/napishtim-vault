@@ -21,10 +21,10 @@ Vault Screen
 
 ## Features
 
-- 🔐 Master password authentication with Argon2 hashing
-- 🔒 AES-256-GCM encryption for all stored credentials
-- 💾 Encrypted-at-rest SQLite storage (SQLCipher)
-- ⏱️ Auto-lock after 5 minutes of inactivity or when minimized
+- 🔐 Master password verification using a derived key and verifier token
+- 🔒 Fernet authenticated encryption for stored passwords
+- 💾 Local SQLite storage with encrypted credential fields
+- ⏱️ Auto-lock after 3 minutes of inactivity or when minimized
 - 📋 Clipboard auto-clear after 30 seconds
 - 🎨 Dark, minimalist UI
 
@@ -69,10 +69,10 @@ The executable will be created in the `dist/` folder.
 
 ## Security
 
-- Master password is never stored - only its Argon2 hash
-- All credentials are encrypted with AES-256-GCM
-- Encryption key is derived from master password using Argon2
-- Database is encrypted at rest using SQLCipher
+- Master password is never stored; verification uses an encrypted verifier token
+- Credential passwords are encrypted with Fernet
+- Encryption key is derived from the master password with Scrypt
+- Database is local SQLite; sensitive fields are encrypted before storage
 - Secrets are kept in memory for minimum time
 - Auto-lock wipes in-memory keys
 
