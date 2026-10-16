@@ -153,6 +153,11 @@ python -m pip install pyinstaller
 pyinstaller --clean --noconsole --name NapishtimVault --onefile --paths src run.py
 ```
 
+or
+```bash
+python -m PyInstaller --clean --noconsole --name NapishtimVault --onefile --paths src run.py
+```
+
 The executable is created at `dist/NapishtimVault.exe`. The `build/` directory and `NapishtimVault.spec` are generated build artifacts.
 
 ## Troubleshooting
